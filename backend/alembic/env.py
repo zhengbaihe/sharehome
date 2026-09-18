@@ -1,4 +1,5 @@
 from alembic import context
+from app import models  # noqa: F401 -- register model metadata for Alembic
 from app.core.config import get_settings
 from app.db.base import Base
 from app.db.session import get_engine
@@ -19,10 +20,18 @@ def run_migrations_offline() -> None:
 
 
 def run_migrations_online() -> None:
-    with get_engine().connect() as connection:
-        context.configure(connection=connection, target_metadata=target_metadata, compare_type=True)
-        with context.begin_transaction():
-            context.run_migrations()
+    connection = context.config.attributes.get("connection")
+    if connection is not None:
+        run_with_connection(connection)
+    else:
+        with get_engine().connect() as connection:
+            run_with_connection(connection)
+
+
+def run_with_connection(connection) -> None:
+    context.configure(connection=connection, target_metadata=target_metadata, compare_type=True)
+    with context.begin_transaction():
+        context.run_migrations()
 
 
 if context.is_offline_mode():

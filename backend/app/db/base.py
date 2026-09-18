@@ -2,4 +2,4 @@ from sqlalchemy.orm import DeclarativeBase
 
 
 class Base(DeclarativeBase):
-    """Shared metadata for future models; no business tables exist yet."""
+    """Shared declarative metadata for ShareHome persistence models."""
