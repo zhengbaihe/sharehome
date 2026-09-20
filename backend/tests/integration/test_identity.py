@@ -101,13 +101,13 @@ def test_roles_and_statuses_persist(db_session, role, status):
     assert stored.departed_at == departed_at
 
 
-@pytest.mark.parametrize("column", ["role", "status"])
-def test_invalid_enum_rejected_by_database(db_session, column):
+@pytest.mark.parametrize(("column", "invalid_value"), [("role", "GUEST"), ("status", "INVALID")])
+def test_invalid_enum_rejected_by_database(db_session, column, invalid_value):
     membership = make_membership(db_session)
     with pytest.raises(IntegrityError):
         db_session.execute(
-            text(f"UPDATE household_memberships SET {column} = 'INVALID' WHERE id = :id"),
-            {"id": membership.id},
+            text(f"UPDATE household_memberships SET {column} = :invalid_value WHERE id = :id"),
+            {"invalid_value": invalid_value, "id": membership.id},
         )
         db_session.commit()
 
