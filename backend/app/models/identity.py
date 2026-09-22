@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import Enum
+from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
 from sqlalchemy import CheckConstraint, DateTime, ForeignKey, String, UniqueConstraint, func
@@ -9,6 +10,9 @@ from sqlalchemy import Enum as SqlEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
 
 from app.db.base import Base
+
+if TYPE_CHECKING:
+    from app.models.billing import Allocation, Bill
 
 
 class MembershipRole(str, Enum):
@@ -67,6 +71,8 @@ class Household(TimestampMixin, Base):
         back_populates="household", passive_deletes="all"
     )
 
+    bills: Mapped[list[Bill]] = relationship(back_populates="household", passive_deletes="all")
+
 
 class HouseholdMembership(TimestampMixin, Base):
     __tablename__ = "household_memberships"
@@ -107,3 +113,9 @@ class HouseholdMembership(TimestampMixin, Base):
     departed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     user: Mapped[User] = relationship(back_populates="memberships")
     household: Mapped[Household] = relationship(back_populates="memberships")
+    paid_bills: Mapped[list[Bill]] = relationship(
+        back_populates="payer_membership", passive_deletes="all"
+    )
+    allocations: Mapped[list[Allocation]] = relationship(
+        back_populates="membership", passive_deletes="all"
+    )

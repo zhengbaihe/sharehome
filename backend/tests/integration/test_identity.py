@@ -156,12 +156,19 @@ def test_migration_upgrade_downgrade_upgrade(empty_database):
     assert inspect(connection).get_table_names() == []
     connection.commit()
     command.upgrade(config, "head")
-    expected = {"users", "households", "household_memberships", "alembic_version"}
+    expected = {
+        "users",
+        "households",
+        "household_memberships",
+        "bills",
+        "allocations",
+        "alembic_version",
+    }
     assert set(inspect(connection).get_table_names()) == expected
     assert compare_metadata(MigrationContext.configure(connection), Base.metadata) == []
     assert (
         connection.scalar(text("SELECT version_num FROM alembic_version"))
-        == "0001_initial_identity"
+        == "0002_bills_allocations"
     )
     connection.commit()
     command.downgrade(config, "base")
