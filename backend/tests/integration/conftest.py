@@ -4,10 +4,14 @@ from uuid import uuid4
 
 import pytest
 from alembic.config import Config
+from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import Session
 
 from alembic import command
+from app.core.config import get_settings
+from app.db.session import get_session
+from app.main import create_app
 
 
 @pytest.fixture
@@ -46,3 +50,23 @@ def db_session(empty_database):
     command.upgrade(config, "head")
     with Session(connection) as session:
         yield session
+
+
+@pytest.fixture
+def client(db_session, monkeypatch):
+    monkeypatch.setenv("JWT_SECRET", "auth-api-test-secret-not-for-production-123456789")
+    monkeypatch.setenv("JWT_ALGORITHM", "HS256")
+    monkeypatch.setenv("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", "30")
+    get_settings.cache_clear()
+    application = create_app()
+
+    def override_session():
+        yield db_session
+
+    application.dependency_overrides[get_session] = override_session
+    try:
+        with TestClient(application) as test_client:
+            yield test_client
+    finally:
+        application.dependency_overrides.clear()
+        get_settings.cache_clear()

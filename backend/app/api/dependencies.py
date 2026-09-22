@@ -3,11 +3,12 @@ from uuid import UUID
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from sqlalchemy.orm import Session
+from sqlalchemy import select
+from sqlalchemy.orm import Session, joinedload
 
 from app.core.security import TokenValidationError, decode_access_token
 from app.db.session import get_session
-from app.models import User
+from app.models import HouseholdMembership, MembershipStatus, User
 
 bearer = HTTPBearer(auto_error=False)
 DatabaseSession = Annotated[Session, Depends(get_session)]
@@ -35,3 +36,25 @@ def get_current_user(
 
 
 CurrentUser = Annotated[User, Depends(get_current_user)]
+
+
+def get_active_household_membership(
+    household_id: UUID,
+    user: CurrentUser,
+    session: DatabaseSession,
+) -> HouseholdMembership:
+    membership = session.scalar(
+        select(HouseholdMembership)
+        .options(joinedload(HouseholdMembership.household))
+        .where(
+            HouseholdMembership.household_id == household_id,
+            HouseholdMembership.user_id == user.id,
+            HouseholdMembership.status == MembershipStatus.ACTIVE,
+        )
+    )
+    if membership is None:
+        raise HTTPException(status_code=404, detail="Household not found")
+    return membership
+
+
+ActiveHouseholdMembership = Annotated[HouseholdMembership, Depends(get_active_household_membership)]

@@ -3,38 +3,14 @@ from uuid import UUID, uuid4
 
 import jwt
 import pytest
-from fastapi.testclient import TestClient
 from sqlalchemy import func, select
 
-from app.core.config import get_settings
 from app.core.security import create_access_token, decode_access_token, verify_password
-from app.db.session import get_session
-from app.main import create_app
 from app.models import Household, HouseholdMembership, User
 
 TEST_SECRET = "auth-api-test-secret-not-for-production-123456789"
 PASSWORD = "correct-horse-battery-staple"
 PUBLIC_FIELDS = {"id", "email", "display_name", "created_at", "updated_at"}
-
-
-@pytest.fixture
-def client(db_session, monkeypatch):
-    monkeypatch.setenv("JWT_SECRET", TEST_SECRET)
-    monkeypatch.setenv("JWT_ALGORITHM", "HS256")
-    monkeypatch.setenv("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", "30")
-    get_settings.cache_clear()
-    application = create_app()
-
-    def override_session():
-        yield db_session
-
-    application.dependency_overrides[get_session] = override_session
-    try:
-        with TestClient(application) as test_client:
-            yield test_client
-    finally:
-        application.dependency_overrides.clear()
-        get_settings.cache_clear()
 
 
 def register(client, email="alex@example.com"):
