@@ -1,7 +1,8 @@
 import { useRef, useState, type FormEvent } from 'react';
-import { BrowserRouter, Link, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Link, Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { authError, register } from './api/auth';
 import { AuthProvider, useAuth } from './auth/AuthContext';
+import { HouseholdDetail, HouseholdList } from './households/HouseholdPages';
 
 function AuthForm({ mode }: { mode: 'login' | 'register' }) {
   const { login } = useAuth();
@@ -57,24 +58,30 @@ function AuthForm({ mode }: { mode: 'login' | 'register' }) {
     {!busy && <p>{registration ? <Link to="/login">Already registered? Log in</Link> : <Link to="/register">Create an account</Link>}</p>}
   </section>;
 }
-function AuthenticatedHome() {
-  const { user, logout } = useAuth();
-  if (!user) return <Navigate to="/login" replace />;
-  return <section className="auth-card">
-    <h2>Welcome, {user.display_name}</h2>
-    <p>{user.email}</p>
-    <p>Household features will be added next.</p>
-    <button onClick={logout}>Logout</button>
-  </section>;
+function HouseholdScreen({ detail = false }: { detail?: boolean }) {
+  const { user, logout, getAccessToken } = useAuth();
+  const { householdId } = useParams();
+  const token = getAccessToken();
+  if (!user || !token) return <Navigate to="/login" replace />;
+  return <>
+    <header className="app-header">
+      <div><h2>Welcome, {user.display_name}</h2><p>{user.email}</p></div>
+      <nav aria-label="Account"><Link to="/households">Households</Link><button onClick={logout}>Logout</button></nav>
+    </header>
+    {detail && householdId ? <HouseholdDetail key={householdId} token={token} householdId={householdId} /> : <HouseholdList token={token} />}
+  </>;
 }
 function AuthRoutes() {
-  const { user, loading } = useAuth();
+  const { user, loading, getAccessToken } = useAuth();
+  const authenticated = Boolean(user && getAccessToken());
   if (loading) return <p role="status">Restoring your session…</p>;
   return <Routes>
-    <Route path="/login" element={user ? <Navigate to="/" replace /> : <AuthForm key="login" mode="login" />} />
-    <Route path="/register" element={user ? <Navigate to="/" replace /> : <AuthForm key="register" mode="register" />} />
-    <Route path="/" element={<AuthenticatedHome />} />
-    <Route path="*" element={<Navigate to={user ? '/' : '/login'} replace />} />
+    <Route path="/login" element={authenticated ? <Navigate to="/" replace /> : <AuthForm key="login" mode="login" />} />
+    <Route path="/register" element={authenticated ? <Navigate to="/" replace /> : <AuthForm key="register" mode="register" />} />
+    <Route path="/" element={<Navigate to={authenticated ? '/households' : '/login'} replace />} />
+    <Route path="/households" element={<HouseholdScreen />} />
+    <Route path="/households/:householdId" element={<HouseholdScreen detail />} />
+    <Route path="*" element={<Navigate to={authenticated ? '/' : '/login'} replace />} />
   </Routes>;
 }
 export default function App() {

@@ -7,6 +7,7 @@ interface AuthState {
   loading: boolean;
   login: (body: LoginRequest) => Promise<void>;
   logout: () => void;
+  getAccessToken: () => string | null;
 }
 const AuthContext = createContext<AuthState | null>(null);
 
@@ -50,7 +51,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     setLoading(false);
   }
-  return <AuthContext.Provider value={{ user, loading, login, logout }}>{children}</AuthContext.Provider>;
+  const getAccessToken = () => sessionStorage.getItem(TOKEN_KEY);
+  return <AuthContext.Provider value={{ user, loading, login, logout, getAccessToken }}>{children}</AuthContext.Provider>;
 }
 export function useAuth() {
   const context = useContext(AuthContext);

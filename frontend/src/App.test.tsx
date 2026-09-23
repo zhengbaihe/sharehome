@@ -30,7 +30,7 @@ it('redirects unauthenticated visitors to login without a network request', asyn
 });
 it('logs in, retrieves identity, stores only the token and logs out locally', async () => {
   fetchMock.mockResolvedValueOnce(reply({ access_token: 'login-token', token_type: 'bearer' }))
-    .mockResolvedValueOnce(reply(user));
+    .mockResolvedValueOnce(reply(user)).mockResolvedValueOnce(reply([]));
   render(<App />);
   fillLogin();
   fireEvent.click(screen.getByRole('button', { name: 'Log in' }));
@@ -46,7 +46,7 @@ it('logs in, retrieves identity, stores only the token and logs out locally', as
   expect(await screen.findByRole('heading', { name: 'Log in' })).toBeInTheDocument();
   expect(sessionStorage.getItem(TOKEN_KEY)).toBeNull();
   expect(screen.queryByText(user.email)).not.toBeInTheDocument();
-  expect(fetchMock).toHaveBeenCalledTimes(2);
+  expect(fetchMock).toHaveBeenCalledTimes(3);
 });
 it('shows a generic invalid-credentials error and clears the password', async () => {
   fetchMock.mockResolvedValue(reply({ detail: 'private server detail' }, 401));
@@ -103,13 +103,13 @@ it.each([
 });
 it('restores a stored token via users/me and redirects away from login', async () => {
   sessionStorage.setItem(TOKEN_KEY, 'stored-token');
-  fetchMock.mockResolvedValue(reply(user));
+  fetchMock.mockResolvedValueOnce(reply(user)).mockResolvedValueOnce(reply([]));
   render(<App />);
   expect(screen.getByRole('status')).toHaveTextContent('Restoring');
   expect(await screen.findByText('Welcome, Alex')).toBeInTheDocument();
-  expect(fetchMock).toHaveBeenCalledTimes(1);
+  expect(fetchMock).toHaveBeenCalledTimes(2);
   expect(fetchMock.mock.calls[0][1].headers.get('Authorization')).toBe('Bearer stored-token');
-  expect(window.location.pathname).toBe('/');
+  expect(window.location.pathname).toBe('/households');
 });
 it('removes an invalid stored token', async () => {
   sessionStorage.setItem(TOKEN_KEY, 'expired');

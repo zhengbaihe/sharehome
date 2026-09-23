@@ -17,3 +17,10 @@ button:disabled, fieldset:disabled button { opacity: .6; cursor: wait; }
 a { color: #126658; }
 [role="alert"] { color: #9b2424; }
 :focus-visible { outline: 3px solid #2b8cba; outline-offset: 3px; }
+
+.app-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; border-bottom: 1px solid #d6e1e4; margin-bottom: 1.5rem; }
+.app-header h2, .app-header p { margin: .4rem 0; }
+.app-header nav { display: flex; align-items: center; gap: 1rem; }
+.household-list { padding: 0; list-style: none; display: grid; gap: 1rem; }
+dt { font-weight: 600; }
+dd { margin: 0 0 .5rem; overflow-wrap: anywhere; }
