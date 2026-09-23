@@ -7,3 +7,13 @@
 body { margin: 0; }
 main { max-width: 48rem; margin: 12vh auto; padding: 2rem; }
 h1 { color: #126658; }
+
+.auth-card { max-width: 26rem; padding: 1.5rem; background: white; border: 1px solid #d6e1e4; border-radius: .75rem; }
+fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: .5rem; }
+input, button { font: inherit; border-radius: .3rem; padding: .6rem .75rem; }
+input { min-width: 0; border: 1px solid #82989f; margin-bottom: .5rem; }
+button { background: #126658; color: white; border: 0; cursor: pointer; }
+button:disabled, fieldset:disabled button { opacity: .6; cursor: wait; }
+a { color: #126658; }
+[role="alert"] { color: #9b2424; }
+:focus-visible { outline: 3px solid #2b8cba; outline-offset: 3px; }
