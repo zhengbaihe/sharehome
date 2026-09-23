@@ -3,7 +3,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-from app.api import auth, households, users
+from app.api import auth, billing, households, users
 from app.core.config import get_settings
 
 
@@ -17,6 +17,7 @@ def create_app() -> FastAPI:
     application.include_router(auth.router)
     application.include_router(users.router)
     application.include_router(households.router)
+    application.include_router(billing.router)
 
     @application.exception_handler(RequestValidationError)
     async def validation_error(request: Request, error: RequestValidationError) -> JSONResponse:
