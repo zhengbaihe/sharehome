@@ -24,3 +24,10 @@ a { color: #126658; }
 .household-list { padding: 0; list-style: none; display: grid; gap: 1rem; }
 dt { font-weight: 600; }
 dd { margin: 0 0 .5rem; overflow-wrap: anywhere; }
+
+select { font: inherit; padding: .6rem; border: 1px solid #82989f; border-radius: .3rem; background: white; }
+.participants { margin: .75rem 0; }
+.participants label { display: flex; align-items: center; gap: .5rem; }
+.participants input { margin: 0; }
+.allocations { list-style: none; padding: 0; }
+.allocations li { display: flex; justify-content: space-between; gap: 1rem; padding: .4rem 0; }

@@ -64,7 +64,7 @@ def test_creation_persists_household_and_only_creator_membership(
     body = response.json()
     assert set(body) == PUBLIC_FIELDS
     assert body["name"] == "Alex Home"
-    assert body["currency"] == "MYR"
+    assert body["currency"] == "CNY"
     assert body["timezone"] == "Asia/Kuala_Lumpur"
     household = db_session.get(Household, UUID(body["id"]))
     assert household.name == "Alex Home"

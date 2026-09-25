@@ -3,6 +3,7 @@ import { BrowserRouter, Link, Navigate, Route, Routes, useLocation, useNavigate,
 import { authError, register } from './api/auth';
 import { AuthProvider, useAuth } from './auth/AuthContext';
 import { HouseholdDetail, HouseholdList } from './households/HouseholdPages';
+import { BillPage } from './bills/BillPages';
 
 function AuthForm({ mode }: { mode: 'login' | 'register' }) {
   const { login } = useAuth();
@@ -58,9 +59,9 @@ function AuthForm({ mode }: { mode: 'login' | 'register' }) {
     {!busy && <p>{registration ? <Link to="/login">Already registered? Log in</Link> : <Link to="/register">Create an account</Link>}</p>}
   </section>;
 }
-function HouseholdScreen({ detail = false }: { detail?: boolean }) {
+function HouseholdScreen({ detail = false, bills = false }: { detail?: boolean; bills?: boolean }) {
   const { user, logout, getAccessToken } = useAuth();
-  const { householdId } = useParams();
+  const { householdId, billId } = useParams();
   const token = getAccessToken();
   if (!user || !token) return <Navigate to="/login" replace />;
   return <>
@@ -68,7 +69,7 @@ function HouseholdScreen({ detail = false }: { detail?: boolean }) {
       <div><h2>Welcome, {user.display_name}</h2><p>{user.email}</p></div>
       <nav aria-label="Account"><Link to="/households">Households</Link><button onClick={logout}>Logout</button></nav>
     </header>
-    {detail && householdId ? <HouseholdDetail key={householdId} token={token} householdId={householdId} /> : <HouseholdList token={token} />}
+    {bills && householdId ? <BillPage key={`${householdId}/${billId ?? "list"}`} token={token} householdId={householdId} billId={billId} /> : detail && householdId ? <HouseholdDetail key={householdId} token={token} householdId={householdId} /> : <HouseholdList token={token} />}
   </>;
 }
 function AuthRoutes() {
@@ -81,6 +82,8 @@ function AuthRoutes() {
     <Route path="/" element={<Navigate to={authenticated ? '/households' : '/login'} replace />} />
     <Route path="/households" element={<HouseholdScreen />} />
     <Route path="/households/:householdId" element={<HouseholdScreen detail />} />
+    <Route path="/households/:householdId/bills" element={<HouseholdScreen bills />} />
+    <Route path="/households/:householdId/bills/:billId" element={<HouseholdScreen bills />} />
     <Route path="*" element={<Navigate to={authenticated ? '/' : '/login'} replace />} />
   </Routes>;
 }

@@ -63,7 +63,7 @@ class Household(TimestampMixin, Base):
 
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
     name: Mapped[str] = mapped_column(String(100))
-    currency: Mapped[str] = mapped_column(String(3), default="MYR", server_default="MYR")
+    currency: Mapped[str] = mapped_column(String(3), default="CNY", server_default="CNY")
     timezone: Mapped[str] = mapped_column(
         String(64), default="Asia/Kuala_Lumpur", server_default="Asia/Kuala_Lumpur"
     )

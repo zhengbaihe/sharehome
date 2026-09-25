@@ -3,7 +3,7 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import App from '../App';
 import { TOKEN_KEY } from '../auth/AuthContext';
 const user = { id: 'user', display_name: 'Alex', email: 'alex@example.com', created_at: '2026-01-01', updated_at: '2026-01-01' };
-const home = { id: 'home-id', name: 'Alex Home', currency: 'MYR', timezone: 'Asia/Kuala_Lumpur', created_at: '2026-01-01', updated_at: '2026-01-01' };
+const home = { id: 'home-id', name: 'Alex Home', currency: 'CNY', timezone: 'Asia/Kuala_Lumpur', created_at: '2026-01-01', updated_at: '2026-01-01' };
 const reply = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status });
 const fetchMock = vi.fn();
 beforeEach(() => {

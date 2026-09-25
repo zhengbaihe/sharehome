@@ -50,7 +50,7 @@ def test_household_persistence(db_session):
     stored = db_session.get(Household, household_id)
     assert isinstance(stored.id, UUID)
     assert stored.name == "Our home"
-    assert stored.currency == "MYR"
+    assert stored.currency == "CNY"
     assert stored.timezone == "Asia/Kuala_Lumpur"
     assert stored.created_at.tzinfo is not None
     assert stored.updated_at.tzinfo is not None
@@ -165,10 +165,16 @@ def test_migration_upgrade_downgrade_upgrade(empty_database):
         "alembic_version",
     }
     assert set(inspect(connection).get_table_names()) == expected
-    assert compare_metadata(MigrationContext.configure(connection), Base.metadata) == []
+    assert (
+        compare_metadata(
+            MigrationContext.configure(connection, opts={"compare_server_default": True}),
+            Base.metadata,
+        )
+        == []
+    )
     assert (
         connection.scalar(text("SELECT version_num FROM alembic_version"))
-        == "0002_bills_allocations"
+        == "0003_household_currency_cny"
     )
     connection.commit()
     command.downgrade(config, "base")

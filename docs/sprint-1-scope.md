@@ -11,7 +11,7 @@ Users have UUID IDs, normalized unique email, password_hash, display_name, and
 creation/update timestamps. Email is stripped and lowercased by the ORM, with a
 matching database check and unique constraint. Only a precomputed password hash
 belongs in password_hash; password hashing and authentication are not implemented.
-Households default to MYR and Asia/Kuala_Lumpur. Memberships have unique
+Households default to CNY and Asia/Kuala_Lumpur. Memberships have unique
 (household_id, user_id), foreign keys, OWNER/MEMBER roles, ACTIVE/DEPARTED status,
 and joined/departed timestamps. There is no cascade deletion or deletion workflow.
 The schema does not yet enforce one owner per household or status/date consistency;

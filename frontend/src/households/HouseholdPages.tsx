@@ -86,6 +86,6 @@ export function HouseholdDetail({ token, householdId }: { token: string; househo
   return <section>
     <p><Link to="/households">Back to households</Link></p>
     {loading ? <p role="status">Loading household…</p> : error ? <p role="alert">{error}</p> : household &&
-      <article className="auth-card"><h2>{household.name}</h2><HouseholdInfo household={household} /></article>}
+      <article className="auth-card"><h2>{household.name}</h2><HouseholdInfo household={household} /><Link to={`/households/${household.id}/bills`}>Bills</Link></article>}
   </section>;
 }
