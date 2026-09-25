@@ -7,10 +7,10 @@ export function parseAmount(value: string): number {
   return Number(minor);
 }
 export function formatMoney(minor: number, currency: string): string {
-  if (!Number.isSafeInteger(minor) || minor < 0) return 'Amount unavailable';
-  const digits = String(minor).padStart(3, '0');
+  if (!Number.isSafeInteger(minor)) return 'Amount unavailable';
+  const digits = String(Math.abs(minor)).padStart(3, '0');
   const prefix = currency === 'CNY' ? '¥' : `${currency} `;
-  return `${prefix}${digits.slice(0, -2)}.${digits.slice(-2)}`;
+  return `${minor < 0 ? '-' : ''}${prefix}${digits.slice(0, -2)}.${digits.slice(-2)}`;
 }
 export function toPaidAt(value: string): string {
   const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(value);

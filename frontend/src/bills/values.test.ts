@@ -24,3 +24,7 @@ it.each(['', 'nonsense', '2026-02-30T12:00', '2026-09-25'])('rejects invalid dat
 it.each(['MYR', 'USD', 'XYZ'])('keeps %s identifiable instead of relabelling it CNY', currency => {
   expect(formatMoney(10000, currency)).toBe(`${currency} 100.00`);
 });
+
+it.each([[-5000, 'CNY', '-¥50.00'], [0, 'CNY', '¥0.00'], [-5000, 'MYR', '-MYR 50.00'], [-Number.MAX_SAFE_INTEGER, 'CNY', '-¥90071992547409.91']] as const)('formats signed %s in %s exactly', (minor, currency, expected) => {
+  expect(formatMoney(minor, currency)).toBe(expected);
+});
