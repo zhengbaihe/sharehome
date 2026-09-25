@@ -4,6 +4,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, BeforeValidator, ConfigDict, Field
 
+from app.models import MembershipRole, MembershipStatus
+
 
 class HouseholdCreate(BaseModel):
     name: Annotated[
@@ -22,3 +24,11 @@ class HouseholdRead(BaseModel):
     timezone: str
     created_at: datetime
     updated_at: datetime
+
+
+class HouseholdMemberRead(BaseModel):
+    membership_id: UUID
+    user_id: UUID
+    display_name: str
+    role: MembershipRole
+    status: MembershipStatus

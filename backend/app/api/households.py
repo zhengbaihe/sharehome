@@ -3,8 +3,8 @@ from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.api.dependencies import ActiveHouseholdMembership, CurrentUser, DatabaseSession
-from app.models import Household, HouseholdMembership, MembershipRole, MembershipStatus
-from app.schemas.household import HouseholdCreate, HouseholdRead
+from app.models import Household, HouseholdMembership, MembershipRole, MembershipStatus, User
+from app.schemas.household import HouseholdCreate, HouseholdMemberRead, HouseholdRead
 
 router = APIRouter(prefix="/households", tags=["households"])
 
@@ -49,3 +49,28 @@ def list_households(user: CurrentUser, session: DatabaseSession) -> list[Househo
 @router.get("/{household_id}", response_model=HouseholdRead)
 def read_household(membership: ActiveHouseholdMembership) -> Household:
     return membership.household
+
+
+@router.get("/{household_id}/members", response_model=list[HouseholdMemberRead])
+def list_household_members(
+    membership: ActiveHouseholdMembership, session: DatabaseSession
+) -> list[HouseholdMemberRead]:
+    """List eligible ACTIVE members by joined_at ASC, then membership ID ASC."""
+    statement = (
+        select(
+            HouseholdMembership.id.label("membership_id"),
+            HouseholdMembership.user_id,
+            User.display_name,
+            HouseholdMembership.role,
+            HouseholdMembership.status,
+        )
+        .join(User, User.id == HouseholdMembership.user_id)
+        .where(
+            HouseholdMembership.household_id == membership.household_id,
+            HouseholdMembership.status == MembershipStatus.ACTIVE,
+        )
+        .order_by(HouseholdMembership.joined_at, HouseholdMembership.id)
+    )
+    return [
+        HouseholdMemberRead.model_validate(row) for row in session.execute(statement).mappings()
+    ]
