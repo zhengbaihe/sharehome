@@ -5,12 +5,18 @@
 - Engineering foundation: FastAPI health endpoint, settings, PostgreSQL wiring,
   Alembic, React shell, Compose, tests, and CI.
 - Pure EQUAL split logic using integer minor units and deterministic remainders.
-- Persistence models and migration for User, Household, and HouseholdMembership.
+- Persistence models and migrations for User, Household, HouseholdMembership, Bill
+  and Allocation; atomic Bill creation and derived Household balances.
+- Argon2id password hashing, registration/login, JWT Bearer access tokens and
+  current-user restoration; no refresh tokens.
+- Household creation/list/detail, ACTIVE membership access control and read-only
+  ACTIVE members; Bill creation/list/detail and Balance API.
+- React authentication, Household, Bill and Balance UI.
 
 Users have UUID IDs, normalized unique email, password_hash, display_name, and
 creation/update timestamps. Email is stripped and lowercased by the ORM, with a
 matching database check and unique constraint. Only a precomputed password hash
-belongs in password_hash; password hashing and authentication are not implemented.
+belongs in password_hash; registration hashes passwords with Argon2id.
 Households default to CNY and Asia/Kuala_Lumpur. Memberships have unique
 (household_id, user_id), foreign keys, OWNER/MEMBER roles, ACTIVE/DEPARTED status,
 and joined/departed timestamps. There is no cascade deletion or deletion workflow.
@@ -24,17 +30,18 @@ email; direct SQL updates must maintain updated_at themselves.
 
 ## Not implemented
 
-Authentication (planned JWT access token with Authorization Bearer, no refresh
-tokens), household routes, bills, allocations, occupancy, invitations, settlements,
-and frontend features. No percentage, fixed, or occupancy-weighted splitting.
+Refresh tokens, occupancy periods, invitations/member management, settlements and
+repayment. No percentage, fixed, or occupancy-weighted splitting.
 
-Future Bill persistence will store payer_membership_id, amount_minor, and paid_at
-without a separate BillPayment table. All money uses integer minor units.
+Bill persistence stores payer_membership_id, amount_minor, and paid_at without a
+separate BillPayment table. All money uses integer minor units.
 No AI, OCR, payment gateways, messaging, Redis, microservices, or Kubernetes.
 
-The eventual Alex/Blair acceptance scenario is a 10000-minor-unit Internet bill,
-5000 allocated to each member, and balances of +5000/-5000. The split function
-supports its calculation; bill recording and balance persistence do not exist yet.
+The Alex/Blair acceptance scenario passed: a 10000-minor-unit Internet bill,
+5000 allocated to each member, and derived balances of +5000/-5000. Balances are
+not persisted. Blair's ACTIVE membership is direct test/demo database preparation;
+there is no member-management API or UI. Migration 0003 changes only the currency
+default to CNY, preserving existing rows and historical monetary values.
 
 ## PostgreSQL verification
 
@@ -44,13 +51,14 @@ schema afterward. Missing TEST_DATABASE_URL causes explicit skips; an unavailabl
 configured database causes failures. No SQLite fallback is used. CI supplies a
 PostgreSQL service and also runs upgrade/downgrade/upgrade on its empty database.
 
-Local validation: Ruff passes; pytest reports 60 passed and 18 PostgreSQL tests
-skipped. Docker's engine was unavailable, and all three live migration commands
-(upgrade, downgrade, upgrade) timed out connecting to the placeholder test database.
-Offline PostgreSQL upgrade SQL compiled successfully; actual persistence and
-migration reversibility remain unverified until a PostgreSQL run. CI has not run.
+Local validation: 294 backend tests passed, including 192 PostgreSQL integration
+tests, with zero skips; 95 frontend tests passed. Ruff, typecheck, build and Compose
+configuration checks passed. Actual migration round-trips and real React/FastAPI/
+PostgreSQL browser acceptance passed, including refresh restoration and logout.
+The acceptance used Compose PostgreSQL and local backend/frontend processes;
+full image building remains unverified after a Docker Hub network timeout.
 
-## Smallest next task
+## Sprint boundary
 
-Implement and test password hashing/verification helpers before registration or
-login endpoints. Keep those helpers separate from the persistence models.
+Sprint 1 functionality is complete. Future work above remains unimplemented;
+portfolio packaging adds documentation only.
