@@ -106,10 +106,17 @@ it('restores a stored token via users/me and redirects away from login', async (
   fetchMock.mockResolvedValueOnce(reply(user)).mockResolvedValueOnce(reply([]));
   render(<App />);
   expect(screen.getByRole('status')).toHaveTextContent('Restoring');
-  expect(await screen.findByText('Welcome, Alex')).toBeInTheDocument();
-  expect(fetchMock).toHaveBeenCalledTimes(2);
-  expect(fetchMock.mock.calls[0][1].headers.get('Authorization')).toBe('Bearer stored-token');
+  expect(await screen.findByRole('heading', { name: 'Welcome, Alex' })).toBeInTheDocument();
+  expect(fetchMock).toHaveBeenCalledWith('/api/users/me', expect.objectContaining({ headers: expect.any(Headers) }));
+  const restorationRequest = fetchMock.mock.calls.find(([url]) => url === '/api/users/me')!;
+  expect(restorationRequest[1].method ?? 'GET').toBe('GET');
+  expect(restorationRequest[1].headers.get('Authorization')).toBe('Bearer stored-token');
+  // Wait for the destination page's effect, not an incidental fetch-call count.
+  expect(await screen.findByText("You don't have a household yet.")).toBeInTheDocument();
   expect(window.location.pathname).toBe('/households');
+  expect(screen.queryByRole('heading', { name: 'Log in' })).not.toBeInTheDocument();
+  expect(screen.queryByLabelText('Password')).not.toBeInTheDocument();
+  expect(sessionStorage.getItem(TOKEN_KEY)).toBe('stored-token');
 });
 it('removes an invalid stored token', async () => {
   sessionStorage.setItem(TOKEN_KEY, 'expired');
