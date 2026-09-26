@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import App from '../App';
 import { TOKEN_KEY } from '../auth/AuthContext';
@@ -48,10 +48,13 @@ async function form() {
 const posts = () => fetchMock.mock.calls.filter(([, options]) => options?.method === 'POST');
 it('shows loading and an empty list with member controls', async () => {
   let resolve!: (response: Response) => void;
+  const pendingMembers = new Promise<Response>(done => { resolve = done; });
   const original = fetchMock.getMockImplementation()!;
-  fetchMock.mockImplementation((url, options) => url.endsWith('/members') ? new Promise<Response>(done => { resolve = done; }) : original(url, options));
+  fetchMock.mockImplementation((url, options) => url.endsWith('/members') ? pendingMembers : original(url, options));
   render(<App />);
-  expect(await screen.findByText('Loading bills and members…')).toBeInTheDocument();
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/households/home/members', expect.any(Object)));
+  expect(screen.getByText('Loading bills and members…')).toBeInTheDocument();
+  expect(screen.queryByText('No bills yet.')).not.toBeInTheDocument();
   await act(async () => resolve(reply(members)));
   expect(await screen.findByText('No bills yet.')).toBeInTheDocument();
   expect(within(screen.getByLabelText('Payer')).getByRole('option', { name: 'Alex' })).toHaveValue('alex-member');
